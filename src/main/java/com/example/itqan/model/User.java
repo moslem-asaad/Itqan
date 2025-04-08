@@ -10,20 +10,21 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
-@MappedSuperclass
+@Entity
+@Table(name = "users")
+@Inheritance(strategy = InheritanceType.JOINED)
 public abstract class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+
     private String name;
-
     private String email;
-    @Enumerated(EnumType.STRING)
-    private Role role;
-
+    private String password;
     private String phoneNumber;
 
-    private String password;
+    @Enumerated(EnumType.STRING)
+    private Role role;
     private boolean enabled = true;
 
     @Override
@@ -44,6 +45,10 @@ public abstract class User implements UserDetails {
 
     public Role getRole() {
         return role;
+    }
+
+    public String getEmail() {
+        return email;
     }
 
     public void setPassword(String password) {

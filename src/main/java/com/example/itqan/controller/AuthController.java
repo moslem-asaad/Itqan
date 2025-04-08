@@ -11,9 +11,12 @@ import com.example.itqan.repository.UserRepository;
 import com.example.itqan.security.JwtUtil;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,21 +44,29 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
-        Optional<? extends User> user = teacherRepository.findByEmail(request.getEmail());
-        if (user.isEmpty()) {
-            user = systemManagerRepository.findByEmail(request.getEmail());
+        Optional<User> userOptional = userRepository.findByEmail(request.getEmail());
+
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
         }
-        if (user.isEmpty()) {
-            return ResponseEntity.badRequest().body("User not found");
+
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+        } catch (BadCredentialsException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect password");
         }
-        String token = jwtUtil.generateToken(request.getEmail());
-        return ResponseEntity.ok(new AuthResponse(token,user.get().getRole()));
+
+        User user = userOptional.get();
+        String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
+        return ResponseEntity.ok(new AuthResponse(token, user.getRole()));
     }
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+        if (userRepository.findByEmail(request.email).isPresent()) {
+            return ResponseEntity.badRequest().body("Email already in use");
+        }
         User newUser;
         if (request.role == Role.MANAGER) {
             SystemManager manager = new SystemManager();
@@ -64,8 +75,7 @@ public class AuthController {
             manager.setPhoneNumber(request.phoneNumber);
             manager.setRole(Role.MANAGER);
             manager.setPassword(passwordEncoder.encode(request.password));
-            newUser = manager;
-            systemManagerRepository.save(manager);
+            newUser = systemManagerRepository.save(manager);
         } else {
             Teacher teacher = new Teacher();
             teacher.setName(request.name);
@@ -73,10 +83,9 @@ public class AuthController {
             teacher.setPhoneNumber(request.phoneNumber);
             teacher.setRole(Role.TEACHER);
             teacher.setPassword(passwordEncoder.encode(request.password));
-            newUser = teacher;
-            teacherRepository.save(teacher);
+            newUser = teacherRepository.save(teacher);
         }
-        return ResponseEntity.ok(userRepository.save(newUser));
+        return ResponseEntity.ok(newUser);
     }
 
 

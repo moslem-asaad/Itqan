@@ -12,20 +12,15 @@ import org.springframework.stereotype.Service;
 @Service
 public class MyUserDetailsService implements UserDetailsService {
 
-    private final TeacherRepository teacherRepository;
-    private final SystemManagerRepository systemManagerRepository;
+    private final UserRepository userRepository;
 
-    public MyUserDetailsService(TeacherRepository teacherRepo, SystemManagerRepository managerRepo) {
-        this.teacherRepository = teacherRepo;
-        this.systemManagerRepository = managerRepo;
+    public MyUserDetailsService(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     @Override
-    public UserDetails loadUserByUsername(String email) {
-        return teacherRepository.findByEmail(email)
-                .map(t -> (UserDetails) t)
-                .or(() -> systemManagerRepository.findByEmail(email)
-                        .map(m -> (UserDetails) m))
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
     }
 }
