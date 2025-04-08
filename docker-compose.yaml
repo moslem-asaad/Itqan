@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+
+  postgres:
+    image: postgres:15
+    container_name: itqan_db
+    restart: always
+    environment:
+      - POSTGRES_DB=itqan
+      - POSTGRES_USER=itqan
+      - POSTGRES_PASSWORD=itqanpassword
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "6432:5432"
+  
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@pgadmin.org
+      PGADMIN_DEFAULT_PASSWORD: adminpassword
+    ports:
+      - "8081:80"
+
+volumes:
+  postgres_data:
