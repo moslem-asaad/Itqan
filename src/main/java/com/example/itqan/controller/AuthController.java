@@ -59,7 +59,7 @@ public class AuthController {
 
         User user = userOptional.get();
         String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
-        return ResponseEntity.ok(new AuthResponse(token, user.getRole()));
+        return ResponseEntity.ok(new AuthResponse(token, user.getRole(),user.getName()));
     }
 
     @PostMapping("/register")
@@ -106,9 +106,12 @@ public class AuthController {
         public String token;
         public Role role;
 
-        public AuthResponse(String token,Role role) {
+        public String userName;
+
+        public AuthResponse(String token,Role role, String userName) {
             this.token = token;
             this.role = role;
+            this.userName = userName;
         }
     }
 }
