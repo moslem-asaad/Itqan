@@ -55,6 +55,10 @@ public abstract class User implements UserDetails {
         return email;
     }
 
+    public int getId() {
+        return id;
+    }
+
     public void setPassword(String password) {
         this.password = password;
     }

@@ -9,13 +9,13 @@ import java.util.Date;
 
 @Component
 public class JwtUtil {
+
     @Value("${jwt.secret}")
     private String secret;
 
-    public String generateToken(String email,String role) {
+    public String generateToken(String email) {
         return Jwts.builder()
                 .setSubject(email)
-                .claim("role", role)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 1 day
                 .signWith(Keys.hmacShaKeyFor(secret.getBytes()), SignatureAlgorithm.HS256)
@@ -28,7 +28,7 @@ public class JwtUtil {
                 .build()
                 .parseClaimsJws(token)
                 .getBody()
-                .get("role", String.class);
+                .getSubject();
     }
 
     public boolean isValid(String token) {
