@@ -13,6 +13,10 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
+@CrossOrigin(origins = {
+        "http://localhost:3000",
+        "https://fox-one-promptly.ngrok-free.app"
+})
 @RestController
 @RequestMapping("/api/courses")
 public class CourseController {
