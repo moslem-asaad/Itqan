@@ -58,4 +58,31 @@ public class CourseController {
     public void deleteCourse(@PathVariable int id) {
         courseService.deleteCourse(id);
     }
+
+    @PutMapping("/teacher/{teacherId}/{courseId}")
+    public ResponseEntity<?> editCourse(
+            @PathVariable int teacherId,
+            @PathVariable int courseId,
+            @RequestBody CourseRequestDTO dto,
+            Authentication authentication
+    ) {
+        User user = (User) authentication.getPrincipal();
+
+        if (user.getRole() == Role.TEACHER && user.getId() != teacherId) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied.");
+        }
+        if (user.getRole() == Role.TEACHER && dto.getTeacherId() != user.getId()) {
+            throw new RuntimeException("You can only edit your own courses.");
+        }
+
+
+        try {
+            Course updatedCourse = courseService.updateCourse(courseId, dto);
+            return ResponseEntity.ok(updatedCourse);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+
 }

@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import java.util.List;
 
 @Entity
+@Inheritance(strategy = InheritanceType.JOINED)
 public class Course {
 
     @Id
@@ -22,6 +23,14 @@ public class Course {
             inverseJoinColumns = @JoinColumn(name = "student_id")
     )
     private List<Student> students;
+
+    @Enumerated(EnumType.STRING)
+    private CourseType courseType;
+
+
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
+    private List<Lesson> lessons;
+
 
 
     public void setName(String name) {
@@ -58,5 +67,10 @@ public class Course {
 
     public List<Student> getStudents() {
         return students;
+    }
+
+    public enum CourseType{
+        TAJWEED,
+        MEMORIZATION
     }
 }

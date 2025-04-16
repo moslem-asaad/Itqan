@@ -7,6 +7,7 @@ import com.example.itqan.model.Teacher;
 import com.example.itqan.repository.CourseRepository;
 import com.example.itqan.repository.StudentRepository;
 import com.example.itqan.repository.TeacherRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -55,4 +56,26 @@ public class CourseService {
     public void deleteCourse(int id) {
         courseRepository.deleteById(id);
     }
+
+
+    @Transactional
+    public Course updateCourse(int courseId, CourseRequestDTO dto) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("Course not found"));
+
+        Teacher teacher = teacherRepository.findById(dto.getTeacherId())
+                .orElseThrow(() -> new RuntimeException("Teacher not found"));
+
+
+
+        List<Student> students = studentRepository.findAllById(dto.getStudentIds());
+
+        course.setName(dto.getName());
+        course.setSchedule(dto.getSchedule());
+        course.setTeacher(teacher);
+        course.setStudents(students);
+
+        return courseRepository.save(course);
+    }
+
 }
