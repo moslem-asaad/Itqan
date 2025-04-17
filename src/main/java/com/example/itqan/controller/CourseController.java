@@ -37,26 +37,22 @@ public class CourseController {
     public ResponseEntity<?> getCoursesByTeacher(
             @PathVariable int teacherId,
             Authentication authentication
-    ) {
-        User user = (User) authentication.getPrincipal();
+    ) throws IllegalAccessException {
 
-        if (user.getRole() == Role.TEACHER && user.getId() != teacherId) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied.");
-        }
-
-        List<Course> courses = courseService.getCoursesByTeacher(teacherId);
+        List<Course> courses = courseService.getCoursesByTeacher(teacherId,authentication);
         return ResponseEntity.ok(courses);
     }
 
     @PostMapping
-    public ResponseEntity<Course> addCourse(@RequestBody CourseRequestDTO dto) {
-        Course savedCourse = courseService.saveCourse(dto);
+    public ResponseEntity<Course> addCourse(@RequestBody CourseRequestDTO dto,Authentication authentication) throws IllegalAccessException {
+        Course savedCourse = courseService.saveCourse(dto,authentication);
         return ResponseEntity.ok(savedCourse);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteCourse(@PathVariable int id) {
-        courseService.deleteCourse(id);
+    public ResponseEntity<Course> deleteCourse(@PathVariable int id,Authentication authentication) throws IllegalAccessException {
+        courseService.deleteCourse(id,authentication);
+        return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/teacher/{teacherId}/{courseId}")
@@ -65,24 +61,9 @@ public class CourseController {
             @PathVariable int courseId,
             @RequestBody CourseRequestDTO dto,
             Authentication authentication
-    ) {
-        User user = (User) authentication.getPrincipal();
-
-        if (user.getRole() == Role.TEACHER && user.getId() != teacherId) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied.");
-        }
-        if (user.getRole() == Role.TEACHER && dto.getTeacherId() != user.getId()) {
-            throw new RuntimeException("You can only edit your own courses.");
-        }
-
-
-        try {
-            Course updatedCourse = courseService.updateCourse(courseId, dto);
-            return ResponseEntity.ok(updatedCourse);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }
+    ) throws IllegalAccessException {
+        Course updatedCourse = courseService.updateCourse(teacherId,courseId, dto,authentication);
+        return ResponseEntity.ok(updatedCourse);
     }
-
 
 }
