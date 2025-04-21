@@ -1,5 +1,6 @@
 package com.example.itqan.model;
 
+import com.example.itqan.exceptions.InvalidModelStateException;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
@@ -71,4 +72,13 @@ public class LessonResource {
     public void setLesson(Lesson lesson) {
         this.lesson = lesson;
     }
+
+    public int getOwnerTeacherId() {
+        if (lesson == null){
+            throw new InvalidModelStateException("lesson is null");
+        }
+        return this.lesson.getOwnerTeacherId();
+
+    }
+
 }

@@ -1,5 +1,6 @@
 package com.example.itqan.model;
 
+import com.example.itqan.exceptions.InvalidModelStateException;
 import jakarta.persistence.*;
 
 import java.util.List;
@@ -67,6 +68,13 @@ public class Course {
 
     public List<Student> getStudents() {
         return students;
+    }
+
+    public int getOwnerTeacherId() {
+        if (teacher == null){
+            throw new InvalidModelStateException("teacher is null");
+        }
+        return teacher.getId();
     }
 
     public enum CourseType{

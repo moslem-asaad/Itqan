@@ -1,6 +1,8 @@
 package com.example.itqan.service;
 
 import com.example.itqan.dto.CourseRequestDTO;
+import com.example.itqan.exceptions.InvalidIdException;
+import com.example.itqan.exceptions.ResourceNotFoundException;
 import com.example.itqan.model.*;
 import com.example.itqan.repository.CourseRepository;
 import com.example.itqan.repository.StudentRepository;
@@ -11,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -46,7 +49,7 @@ public class CourseService {
 
     public Course saveCourse(CourseRequestDTO dto, Authentication authentication) throws IllegalAccessException {
         Teacher teacher = teacherRepository.findById(dto.getTeacherId())
-                .orElseThrow(() -> new RuntimeException("Teacher not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Teacher not found"));
 
         User user = (User) authentication.getPrincipal();
         if (user.getId() != teacher.getId()){
@@ -66,7 +69,7 @@ public class CourseService {
 
     public void deleteCourse(int id,Authentication authentication) throws IllegalAccessException {
         Course course = courseRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Course not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
 
         User user = (User) authentication.getPrincipal();
         if (user.getId() != course.getTeacher().getId()){
@@ -78,11 +81,15 @@ public class CourseService {
 
     @Transactional
     public Course updateCourse(int teacherId,int courseId, CourseRequestDTO dto,Authentication authentication) throws IllegalAccessException {
-        Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new RuntimeException("Course not found"));
+        if (teacherId!=dto.getTeacherId()){
+            throw new InvalidIdException("Invalid Params");
+        }
 
-        Teacher teacher = teacherRepository.findById(dto.getTeacherId())
-                .orElseThrow(() -> new RuntimeException("Teacher not found"));
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
+
+        Teacher teacher = teacherRepository.findById(teacherId)
+                .orElseThrow(() -> new ResourceNotFoundException("Teacher not found"));
 
         User user = (User) authentication.getPrincipal();
 
@@ -93,8 +100,10 @@ public class CourseService {
         if (user.getRole() == Role.TEACHER && dto.getTeacherId() != user.getId()) {
             throw new IllegalAccessException("You can only edit your own courses.");
         }
-
-        List<Student> students = studentRepository.findAllById(dto.getStudentIds());
+        List<Integer> studentIds = dto.getStudentIds();
+        List<Student> students = new ArrayList<>();
+        if(studentIds!=null)
+            students = studentRepository.findAllById(studentIds);
 
         course.setName(dto.getName());
         course.setSchedule(dto.getSchedule());

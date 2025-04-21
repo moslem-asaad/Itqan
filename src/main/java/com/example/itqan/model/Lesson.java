@@ -1,5 +1,6 @@
 package com.example.itqan.model;
 
+import com.example.itqan.exceptions.InvalidModelStateException;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
@@ -69,5 +70,13 @@ public class Lesson {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public int getOwnerTeacherId() {
+        if (course == null){
+            throw new InvalidModelStateException("course is null");
+        }
+        return this.course.getOwnerTeacherId();
+
     }
 }

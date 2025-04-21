@@ -8,6 +8,7 @@ import com.example.itqan.model.LessonResource;
 import com.example.itqan.service.CourseService;
 import com.example.itqan.service.LessonService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,8 +33,8 @@ public class LessonController {
         this.lessonService = lessonService;
     }
     @PostMapping
-    public ResponseEntity<LessonDTO> createLesson(@RequestBody LessonRequestDTO dto) {
-        LessonDTO lessonDTO = lessonService.saveLesson(dto);
+    public ResponseEntity<LessonDTO> createLesson(@RequestBody LessonRequestDTO dto, Authentication authentication) throws IllegalAccessException {
+        LessonDTO lessonDTO = lessonService.saveLesson(dto,authentication);
         return ResponseEntity.ok(lessonDTO);
     }
 
@@ -48,24 +49,25 @@ public class LessonController {
     @PostMapping("/{lessonId}/resources")
     public ResponseEntity<?> addResourceToLesson(
             @PathVariable int lessonId,
-            @RequestBody LessonResourceDTO dto
-    ) {
-        LessonDTO lessonDTO = lessonService.addResourceToLesson(lessonId,dto);
+            @RequestBody LessonResourceDTO dto,
+            Authentication authentication
+    ) throws IllegalAccessException {
+        LessonDTO lessonDTO = lessonService.addResourceToLesson(lessonId,dto,authentication);
         return ResponseEntity.ok(lessonDTO);
     }
 
     @DeleteMapping("/resources/{resourceId}")
-    public ResponseEntity<?> deleteResource(@PathVariable int resourceId) {
-        lessonService.deleteResource(resourceId);
+    public ResponseEntity<?> deleteResource(@PathVariable int resourceId, Authentication authentication) throws IllegalAccessException {
+        lessonService.deleteResource(resourceId,authentication);
         return ResponseEntity.ok("Resource deleted");
     }
 
     @PutMapping("/resources/{resourceId}")
     public ResponseEntity<?> updateResource(
             @PathVariable int resourceId,
-            @RequestBody LessonResourceDTO dto
-    ) {
-        LessonResource resource = lessonService.updateResource(resourceId,dto);
+            @RequestBody LessonResourceDTO dto, Authentication authentication
+    ) throws IllegalAccessException {
+        LessonResource resource = lessonService.updateResource(resourceId,dto,authentication);
         return ResponseEntity.ok(resource);
     }
 
