@@ -1,6 +1,7 @@
 package com.example.itqan.service;
 
 import com.example.itqan.dto.CourseRequestDTO;
+import com.example.itqan.dto.CourseResponseDTO;
 import com.example.itqan.exceptions.InvalidIdException;
 import com.example.itqan.exceptions.ResourceNotFoundException;
 import com.example.itqan.model.*;
@@ -14,8 +15,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class CourseService {
@@ -34,13 +37,47 @@ public class CourseService {
         return courseRepository.findAll();
     }
 
-    public List<Course> getCoursesByTeacher(int teacherId,Authentication authentication) throws IllegalAccessException {
+    public List<CourseResponseDTO> getCoursesByTeacher(int teacherId, Authentication authentication) throws IllegalAccessException {
         User user = (User) authentication.getPrincipal();
 
         if (user.getRole() == Role.TEACHER && user.getId() != teacherId) {
             throw new IllegalAccessException("Access denied.");
         }
-        return courseRepository.findByTeacherId(teacherId);
+        List<Course> courses = courseRepository.findByTeacherIdWithStudentsAndTeacher(teacherId);
+        return courses.stream().map(course -> {
+            CourseResponseDTO dto = new CourseResponseDTO();
+            dto.id = course.getId();
+            dto.name = course.getName();
+            dto.schedule = course.getSchedule();
+            dto.teacherId = course.getTeacher().getId();
+            dto.numOfStudents = course.getStudents() != null ? course.getStudents().size() : 0;
+            return dto;
+        }).collect(Collectors.toList());
+    }
+
+    public CourseResponseDTO getCourseByTeacher(int teacherId, int courseId, Authentication authentication) throws IllegalAccessException {
+        User user = (User) authentication.getPrincipal();
+
+        if (user.getRole() == Role.TEACHER && user.getId() != teacherId) {
+            throw new IllegalAccessException("Access denied.");
+        }
+        Optional<Course> optional = courseRepository.findById(courseId);
+        if (optional.isPresent()){
+            Course course = optional.get();
+            if (course.getOwnerTeacherId()!=teacherId){
+                throw new IllegalAccessException("Access denied.");
+            }
+            else{
+                CourseResponseDTO dto = new CourseResponseDTO();
+                dto.id = course.getId();
+                dto.name = course.getName();
+                dto.schedule = course.getSchedule();
+                dto.teacherId = course.getTeacher().getId();
+                dto.numOfStudents = course.getStudents() != null ? course.getStudents().size() : 0;
+                return dto;
+            }
+        }
+        throw new ResourceNotFoundException("Course Not Found");
     }
 
     public Optional<Course> getCourseById(int id) {
@@ -80,7 +117,7 @@ public class CourseService {
 
 
     @Transactional
-    public Course updateCourse(int teacherId,int courseId, CourseRequestDTO dto,Authentication authentication) throws IllegalAccessException {
+    public CourseResponseDTO updateCourse(int teacherId,int courseId, CourseRequestDTO dto,Authentication authentication) throws IllegalAccessException {
         if (teacherId!=dto.getTeacherId()){
             throw new InvalidIdException("Invalid Params");
         }
@@ -101,16 +138,22 @@ public class CourseService {
             throw new IllegalAccessException("You can only edit your own courses.");
         }
         List<Integer> studentIds = dto.getStudentIds();
-        List<Student> students = new ArrayList<>();
-        if(studentIds!=null)
-            students = studentRepository.findAllById(studentIds);
-
+        if(studentIds!=null){
+            List<Student> students = studentRepository.findAllById(studentIds);
+            course.setStudents(students);
+        }
         course.setName(dto.getName());
         course.setSchedule(dto.getSchedule());
         course.setTeacher(teacher);
-        course.setStudents(students);
-
-        return courseRepository.save(course);
+        course = courseRepository.save(course);
+        CourseResponseDTO courseResponseDTO = new CourseResponseDTO();
+        courseResponseDTO.id = course.getId();
+        courseResponseDTO.name = course.getName();
+        courseResponseDTO.schedule = course.getSchedule();
+        courseResponseDTO.teacherId = course.getTeacher().getId();
+        courseResponseDTO.numOfStudents = course.getStudents() != null ? course.getStudents().size() : 0;
+        return courseResponseDTO;
     }
+
 
 }

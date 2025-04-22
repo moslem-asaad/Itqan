@@ -1,21 +1,18 @@
 package com.example.itqan.service;
 
+import com.example.itqan.dto.CourseResponseDTO;
 import com.example.itqan.dto.LessonDTO;
 import com.example.itqan.dto.LessonRequestDTO;
 import com.example.itqan.dto.LessonResourceDTO;
 import com.example.itqan.exceptions.ResourceNotFoundException;
-import com.example.itqan.model.Course;
-import com.example.itqan.model.Lesson;
-import com.example.itqan.model.LessonResource;
-import com.example.itqan.model.User;
+import com.example.itqan.mapper.LessonMapper;
+import com.example.itqan.mapper.LessonResourceMapper;
+import com.example.itqan.model.*;
 import com.example.itqan.repository.*;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-
 import java.util.List;
+
 
 @Service
 public class LessonService {
@@ -53,15 +50,21 @@ public class LessonService {
             res.setLesson(lesson);
             return res;
         }).toList();
-
         lesson.setResources(resources);
 
-        LessonDTO lessonDTO = new LessonDTO(lesson.getTitle(),lesson.getDescription(),lesson.getCourse().getId(),lesson.getResources());
 
         lessonRepository.save(lesson);
-        return lessonDTO;
+        return LessonMapper.toDTO(lesson);
     }
 
+    /**
+     * could change to jest return the resource
+     * @param lessonId
+     * @param dto
+     * @param authentication
+     * @return
+     * @throws IllegalAccessException
+     */
     public LessonDTO addResourceToLesson(int lessonId, LessonResourceDTO dto, Authentication authentication) throws IllegalAccessException {
         Lesson lesson = lessonRepository.findById(lessonId)
                 .orElseThrow(() -> new ResourceNotFoundException("Lesson not found"));
@@ -78,12 +81,9 @@ public class LessonService {
         resource.setType(dto.type);
         resource.setLesson(lesson);
 
-        lesson.getResources().add(resource);
-        LessonDTO lessonDTO = new LessonDTO(lesson.getTitle(),lesson.getDescription(),lesson.getCourse().getId(),lesson.getResources());
-
+        lesson.addResource(resource);
         lessonRepository.save(lesson);
-
-        return lessonDTO;
+        return LessonMapper.toDTO(lesson);
     }
 
     public boolean deleteResource(int resourceId, Authentication authentication) throws IllegalAccessException {
@@ -99,7 +99,7 @@ public class LessonService {
         return true;
     }
 
-    public LessonResource updateResource(int resourceId, LessonResourceDTO dto, Authentication authentication) throws IllegalAccessException {
+    public LessonResourceDTO updateResource(int resourceId, LessonResourceDTO dto, Authentication authentication) throws IllegalAccessException {
         LessonResource resource = lessonResourceRepository.findById(resourceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Resource not found"));
 
@@ -113,9 +113,28 @@ public class LessonService {
         resource.setInternal(dto.internal);
         resource.setType(dto.type);
 
-        return lessonResourceRepository.save(resource);
+        return LessonResourceMapper.toDTO(lessonResourceRepository.save(resource));
     }
 
-    //private void authenticate(Authentication authentication)
+    public List<LessonDTO> getCourseLessons(int teacherId, int courseId, Authentication authentication) throws IllegalAccessException {
+        User user = (User) authentication.getPrincipal();
+
+        if (user.getRole() == Role.TEACHER && user.getId() != teacherId) {
+            throw new IllegalAccessException("Access denied.");
+        }
+
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
+
+        if (course.getTeacher().getId() != teacherId) {
+            throw new IllegalAccessException("You are not authorized to access this course.");
+        }
+
+        List<LessonDTO> lessonDTOs = course.getLessons().stream()
+                .map(LessonMapper::toDTO)
+                .toList();
+
+        return lessonDTOs;
+    }
 
 }

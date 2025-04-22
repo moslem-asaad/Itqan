@@ -20,9 +20,9 @@ public class LessonDTO {
 
     public int courseId;
 
-    public List<LessonResource> resources = new ArrayList<>();
+    public List<LessonResourceDTO> resources = new ArrayList<>();
 
-    public LessonDTO( String title, String description, int courseId, List<LessonResource> resources) {
+    public LessonDTO( String title, String description, int courseId, List<LessonResourceDTO> resources) {
         this.title = title;
         this.description = description;
         this.courseId = courseId;

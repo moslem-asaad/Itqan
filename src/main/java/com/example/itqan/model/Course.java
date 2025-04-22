@@ -1,6 +1,7 @@
 package com.example.itqan.model;
 
 import com.example.itqan.exceptions.InvalidModelStateException;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 import java.util.List;
@@ -30,6 +31,7 @@ public class Course {
 
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<Lesson> lessons;
 
 
@@ -75,6 +77,26 @@ public class Course {
             throw new InvalidModelStateException("teacher is null");
         }
         return teacher.getId();
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public CourseType getCourseType() {
+        return courseType;
+    }
+
+    public void setCourseType(CourseType courseType) {
+        this.courseType = courseType;
+    }
+
+    public List<Lesson> getLessons() {
+        return lessons;
+    }
+
+    public void setLessons(List<Lesson> lessons) {
+        this.lessons = lessons;
     }
 
     public enum CourseType{

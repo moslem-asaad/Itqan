@@ -1,6 +1,7 @@
 package com.example.itqan.controller;
 
 import com.example.itqan.dto.CourseRequestDTO;
+import com.example.itqan.dto.CourseResponseDTO;
 import com.example.itqan.model.Course;
 import com.example.itqan.model.Role;
 import com.example.itqan.model.User;
@@ -39,8 +40,19 @@ public class CourseController {
             Authentication authentication
     ) throws IllegalAccessException {
 
-        List<Course> courses = courseService.getCoursesByTeacher(teacherId,authentication);
+        List<CourseResponseDTO> courses = courseService.getCoursesByTeacher(teacherId,authentication);
         return ResponseEntity.ok(courses);
+    }
+
+    @GetMapping("/teacher/{teacherId}/{courseId}")
+    public ResponseEntity<?> getCourseByTeacher(
+            @PathVariable int teacherId,
+            @PathVariable int courseId,
+            Authentication authentication
+    ) throws IllegalAccessException {
+
+        CourseResponseDTO course = courseService.getCourseByTeacher(teacherId,courseId,authentication);
+        return ResponseEntity.ok(course);
     }
 
     @PostMapping
@@ -62,8 +74,10 @@ public class CourseController {
             @RequestBody CourseRequestDTO dto,
             Authentication authentication
     ) throws IllegalAccessException {
-        Course updatedCourse = courseService.updateCourse(teacherId,courseId, dto,authentication);
+        CourseResponseDTO updatedCourse = courseService.updateCourse(teacherId,courseId, dto,authentication);
         return ResponseEntity.ok(updatedCourse);
     }
+
+
 
 }

@@ -8,7 +8,7 @@ public class UserDTO {
     public String token;
     public Role role;
 
-    private String name;
+    public String name;
 
     public String userName;
 

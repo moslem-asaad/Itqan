@@ -1,6 +1,7 @@
 package com.example.itqan.model;
 
 import com.example.itqan.exceptions.InvalidModelStateException;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
@@ -20,6 +21,7 @@ public class Lesson {
 
     @ManyToOne
     @JoinColumn(name = "course_id")
+    @JsonBackReference
     private Course course;
 
     @OneToMany(mappedBy = "lesson", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -77,6 +79,10 @@ public class Lesson {
             throw new InvalidModelStateException("course is null");
         }
         return this.course.getOwnerTeacherId();
+    }
 
+    public List<LessonResource> addResource(LessonResource lessonResource){
+        resources.add(lessonResource);
+        return resources;
     }
 }

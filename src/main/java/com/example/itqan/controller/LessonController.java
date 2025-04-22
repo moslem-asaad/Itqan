@@ -3,6 +3,7 @@ package com.example.itqan.controller;
 import com.example.itqan.dto.LessonDTO;
 import com.example.itqan.dto.LessonRequestDTO;
 import com.example.itqan.dto.LessonResourceDTO;
+import com.example.itqan.model.Course;
 import com.example.itqan.model.Lesson;
 import com.example.itqan.model.LessonResource;
 import com.example.itqan.service.CourseService;
@@ -17,6 +18,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.List;
 import java.util.UUID;
 
 @CrossOrigin(origins = {
@@ -67,8 +69,18 @@ public class LessonController {
             @PathVariable int resourceId,
             @RequestBody LessonResourceDTO dto, Authentication authentication
     ) throws IllegalAccessException {
-        LessonResource resource = lessonService.updateResource(resourceId,dto,authentication);
+        LessonResourceDTO resource = lessonService.updateResource(resourceId,dto,authentication);
         return ResponseEntity.ok(resource);
+    }
+
+    @GetMapping("/teacher/{teacherId}/{courseId}")
+    public ResponseEntity<?> courseLessons(
+            @PathVariable int teacherId,
+            @PathVariable int courseId,
+            Authentication authentication
+    )throws IllegalAccessException {
+        List<LessonDTO> lessons = lessonService.getCourseLessons(teacherId,courseId,authentication);
+        return ResponseEntity.ok(lessons);
     }
 
 
