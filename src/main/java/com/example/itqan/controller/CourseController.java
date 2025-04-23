@@ -56,8 +56,8 @@ public class CourseController {
     }
 
     @PostMapping
-    public ResponseEntity<Course> addCourse(@RequestBody CourseRequestDTO dto,Authentication authentication) throws IllegalAccessException {
-        Course savedCourse = courseService.saveCourse(dto,authentication);
+    public ResponseEntity<CourseResponseDTO> addCourse(@RequestBody CourseRequestDTO dto,Authentication authentication) throws IllegalAccessException {
+        CourseResponseDTO savedCourse = courseService.saveCourse(dto,authentication);
         return ResponseEntity.ok(savedCourse);
     }
 

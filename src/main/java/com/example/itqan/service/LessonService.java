@@ -1,6 +1,4 @@
 package com.example.itqan.service;
-
-import com.example.itqan.dto.CourseResponseDTO;
 import com.example.itqan.dto.LessonDTO;
 import com.example.itqan.dto.LessonRequestDTO;
 import com.example.itqan.dto.LessonResourceDTO;
@@ -35,24 +33,7 @@ public class LessonService {
         if (user.getId() != course.getOwnerTeacherId()){
             throw new IllegalAccessException("Access Denied, The course belongs to someone else");
         }
-
-        Lesson lesson = new Lesson();
-        lesson.setTitle(dto.title);
-        lesson.setDescription(dto.description);
-        lesson.setCourse(course);
-
-        List<LessonResource> resources = dto.resources.stream().map(resDto -> {
-            LessonResource res = new LessonResource();
-            res.setName(resDto.name);
-            res.setUrl(resDto.url);
-            res.setInternal(resDto.internal);
-            res.setType(resDto.type);
-            res.setLesson(lesson);
-            return res;
-        }).toList();
-        lesson.setResources(resources);
-
-
+        Lesson lesson = LessonMapper.fromDTO(dto,course);
         lessonRepository.save(lesson);
         return LessonMapper.toDTO(lesson);
     }
@@ -68,19 +49,11 @@ public class LessonService {
     public LessonDTO addResourceToLesson(int lessonId, LessonResourceDTO dto, Authentication authentication) throws IllegalAccessException {
         Lesson lesson = lessonRepository.findById(lessonId)
                 .orElseThrow(() -> new ResourceNotFoundException("Lesson not found"));
-
         User user = (User) authentication.getPrincipal();
         if (user.getId() != lesson.getOwnerTeacherId()){
             throw new IllegalAccessException("Access Denied, The course belongs to someone else");
         }
-
-        LessonResource resource = new LessonResource();
-        resource.setName(dto.name);
-        resource.setUrl(dto.url);
-        resource.setInternal(dto.internal);
-        resource.setType(dto.type);
-        resource.setLesson(lesson);
-
+        LessonResource resource = LessonResourceMapper.fromDTO(dto,lesson);
         lesson.addResource(resource);
         lessonRepository.save(lesson);
         return LessonMapper.toDTO(lesson);
@@ -102,17 +75,11 @@ public class LessonService {
     public LessonResourceDTO updateResource(int resourceId, LessonResourceDTO dto, Authentication authentication) throws IllegalAccessException {
         LessonResource resource = lessonResourceRepository.findById(resourceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Resource not found"));
-
         User user = (User) authentication.getPrincipal();
         if (user.getId() != resource.getOwnerTeacherId()){
             throw new IllegalAccessException("Access Denied, The course belongs to someone else");
         }
-
-        resource.setName(dto.name);
-        resource.setUrl(dto.url);
-        resource.setInternal(dto.internal);
-        resource.setType(dto.type);
-
+        resource.updateResource(dto);
         return LessonResourceMapper.toDTO(lessonResourceRepository.save(resource));
     }
 

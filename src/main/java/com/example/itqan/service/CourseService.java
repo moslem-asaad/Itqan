@@ -4,11 +4,13 @@ import com.example.itqan.dto.CourseRequestDTO;
 import com.example.itqan.dto.CourseResponseDTO;
 import com.example.itqan.exceptions.InvalidIdException;
 import com.example.itqan.exceptions.ResourceNotFoundException;
+import com.example.itqan.mapper.CourseMapper;
 import com.example.itqan.model.*;
 import com.example.itqan.repository.CourseRepository;
 import com.example.itqan.repository.StudentRepository;
 import com.example.itqan.repository.TeacherRepository;
 import jakarta.transaction.Transactional;
+import org.checkerframework.checker.units.qual.C;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -44,15 +46,7 @@ public class CourseService {
             throw new IllegalAccessException("Access denied.");
         }
         List<Course> courses = courseRepository.findByTeacherIdWithStudentsAndTeacher(teacherId);
-        return courses.stream().map(course -> {
-            CourseResponseDTO dto = new CourseResponseDTO();
-            dto.id = course.getId();
-            dto.name = course.getName();
-            dto.schedule = course.getSchedule();
-            dto.teacherId = course.getTeacher().getId();
-            dto.numOfStudents = course.getStudents() != null ? course.getStudents().size() : 0;
-            return dto;
-        }).collect(Collectors.toList());
+        return courses.stream().map(CourseMapper::toResponseDTO).collect(Collectors.toList());
     }
 
     public CourseResponseDTO getCourseByTeacher(int teacherId, int courseId, Authentication authentication) throws IllegalAccessException {
@@ -68,13 +62,7 @@ public class CourseService {
                 throw new IllegalAccessException("Access denied.");
             }
             else{
-                CourseResponseDTO dto = new CourseResponseDTO();
-                dto.id = course.getId();
-                dto.name = course.getName();
-                dto.schedule = course.getSchedule();
-                dto.teacherId = course.getTeacher().getId();
-                dto.numOfStudents = course.getStudents() != null ? course.getStudents().size() : 0;
-                return dto;
+                return CourseMapper.toResponseDTO(course);
             }
         }
         throw new ResourceNotFoundException("Course Not Found");
@@ -84,7 +72,7 @@ public class CourseService {
         return courseRepository.findById(id);
     }
 
-    public Course saveCourse(CourseRequestDTO dto, Authentication authentication) throws IllegalAccessException {
+    public CourseResponseDTO saveCourse(CourseRequestDTO dto, Authentication authentication) throws IllegalAccessException {
         Teacher teacher = teacherRepository.findById(dto.getTeacherId())
                 .orElseThrow(() -> new ResourceNotFoundException("Teacher not found"));
 
@@ -92,16 +80,15 @@ public class CourseService {
         if (user.getId() != teacher.getId()){
             throw new IllegalAccessException("Access denied.");
         }
-
-        List<Student> students = studentRepository.findAllById(dto.getStudentIds());
+        List<Student> students = null;
+        if (dto.getStudentIds()!=null)
+            students = studentRepository.findAllById(dto.getStudentIds());
 
         Course course = new Course();
-        course.setName(dto.getName());
-        course.setSchedule(dto.getSchedule());
-        course.setTeacher(teacher);
-        course.setStudents(students);
+        CourseMapper.fromRequestDTO(course, dto, teacher, students);
 
-        return courseRepository.save(course);
+        course = courseRepository.save(course);
+        return CourseMapper.toResponseDTO(course);
     }
 
     public void deleteCourse(int id,Authentication authentication) throws IllegalAccessException {
@@ -137,22 +124,23 @@ public class CourseService {
         if (user.getRole() == Role.TEACHER && dto.getTeacherId() != user.getId()) {
             throw new IllegalAccessException("You can only edit your own courses.");
         }
-        List<Integer> studentIds = dto.getStudentIds();
-        if(studentIds!=null){
-            List<Student> students = studentRepository.findAllById(studentIds);
-            course.setStudents(students);
-        }
-        course.setName(dto.getName());
-        course.setSchedule(dto.getSchedule());
-        course.setTeacher(teacher);
+
+        List<Student> students = null;
+        if (dto.getStudentIds()!=null)
+            students = studentRepository.findAllById(dto.getStudentIds());
+        CourseMapper.fromRequestDTO(course,dto,teacher,students);
         course = courseRepository.save(course);
-        CourseResponseDTO courseResponseDTO = new CourseResponseDTO();
-        courseResponseDTO.id = course.getId();
-        courseResponseDTO.name = course.getName();
-        courseResponseDTO.schedule = course.getSchedule();
-        courseResponseDTO.teacherId = course.getTeacher().getId();
-        courseResponseDTO.numOfStudents = course.getStudents() != null ? course.getStudents().size() : 0;
-        return courseResponseDTO;
+
+
+        return CourseMapper.toResponseDTO(course);
+    }
+
+    private void validUser(int id, Authentication authentication) throws IllegalAccessException {
+        User user = (User) authentication.getPrincipal();
+
+        if (user.getRole() == Role.TEACHER && user.getId() != id) {
+            throw new IllegalAccessException("Access denied.");
+        }
     }
 
 
