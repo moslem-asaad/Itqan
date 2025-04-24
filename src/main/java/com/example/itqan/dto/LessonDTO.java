@@ -12,6 +12,8 @@ import java.util.List;
 
 public class LessonDTO {
 
+    public int id;
+
 
     public String title;
 
@@ -22,7 +24,8 @@ public class LessonDTO {
 
     public List<LessonResourceDTO> resources = new ArrayList<>();
 
-    public LessonDTO( String title, String description, int courseId, List<LessonResourceDTO> resources) {
+    public LessonDTO( int id,String title, String description, int courseId, List<LessonResourceDTO> resources) {
+        this.id = id;
         this.title = title;
         this.description = description;
         this.courseId = courseId;

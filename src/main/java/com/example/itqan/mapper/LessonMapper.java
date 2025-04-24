@@ -13,7 +13,7 @@ public class LessonMapper {
     public static LessonDTO toDTO(Lesson lesson) {
             List<LessonResourceDTO> resourceDTOs = lesson.getResources().stream().map(LessonResourceMapper::toDTO).toList();
 
-        return new LessonDTO(lesson.getTitle(), lesson.getDescription(), lesson.getCourse().getId(), resourceDTOs);
+        return new LessonDTO(lesson.getId(), lesson.getTitle(), lesson.getDescription(), lesson.getCourse().getId(), resourceDTOs);
     }
 
     public static  Lesson fromDTO(LessonRequestDTO lessonDTO, Course course){
