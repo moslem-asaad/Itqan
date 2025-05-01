@@ -5,6 +5,7 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.util.Date;
 
 @Component
@@ -31,12 +32,12 @@ public class JwtUtil {
                 .getSubject();
     }
 
-    public boolean isValid(String token) {
+    public boolean isValid(String token) throws IOException {
         try {
             extractEmail(token);
             return true;
         } catch (Exception e) {
-            return false;
+            throw new IOException("Token expired or invalid");
         }
     }
 }
