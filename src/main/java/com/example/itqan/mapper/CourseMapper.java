@@ -7,6 +7,10 @@ import com.example.itqan.model.CourseTime;
 import com.example.itqan.model.Student;
 import com.example.itqan.model.Teacher;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 public class CourseMapper {
@@ -31,6 +35,8 @@ public class CourseMapper {
                         ct.setDayOfWeek(t.getDayOfWeek());
                         ct.setStartTime(t.getStartTime());
                         ct.setEndTime(t.getEndTime());
+                        LocalDateTime nextLessonDate = calculateNextLessonDate(t.getDayOfWeek(), t.getStartTime());
+                        ct.setNextLessonDate(nextLessonDate);
                         return ct;
                     }).toList();
             course.setSchedule(times);
@@ -40,5 +46,19 @@ public class CourseMapper {
 
         return course;
     }
+
+    private static LocalDateTime calculateNextLessonDate(DayOfWeek dayOfWeek, LocalTime startTime) {
+        LocalDate today = LocalDate.now();
+        DayOfWeek todayDow = today.getDayOfWeek();
+
+        int daysUntilNext = (dayOfWeek.getValue() - todayDow.getValue() + 7) % 7;
+        if (daysUntilNext == 0 && startTime.isBefore(LocalTime.now())) {
+            daysUntilNext = 7;
+        }
+
+        LocalDate nextDate = today.plusDays(daysUntilNext);
+        return LocalDateTime.of(nextDate, startTime);
+    }
+
 
 }

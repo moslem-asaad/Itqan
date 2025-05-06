@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 
 import java.time.DayOfWeek;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Entity
@@ -34,6 +35,9 @@ public class CourseTime {
     @Column(name = "end_time",   nullable = false)
     @JsonFormat(pattern = "HH:mm")
     private LocalTime endTime;
+
+    @Column(name = "next_lesson_date")
+    private LocalDateTime nextLessonDate;
 
     public Long getId() {
         return id;
@@ -75,10 +79,19 @@ public class CourseTime {
         this.endTime = endTime;
     }
 
+    public LocalDateTime getNextLessonDate() {
+        return nextLessonDate;
+    }
+
+    public void setNextLessonDate(LocalDateTime nextLessonDate) {
+        this.nextLessonDate = nextLessonDate;
+    }
+
     public void isVaild() {
         if(!startTime.isBefore(endTime))
             throw new IllegalArgumentException("start time should be before end time") ;
     }
+
 
 
 
