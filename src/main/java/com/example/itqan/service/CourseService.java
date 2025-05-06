@@ -80,6 +80,7 @@ public class CourseService {
         if (user.getId() != teacher.getId()){
             throw new IllegalAccessException("Access denied.");
         }
+        isValidSchedule(dto.getSchedule());
         List<Student> students = null;
         if (dto.getStudentIds()!=null)
             students = studentRepository.findAllById(dto.getStudentIds());
@@ -89,6 +90,12 @@ public class CourseService {
 
         course = courseRepository.save(course);
         return CourseMapper.toResponseDTO(course);
+    }
+
+    private void isValidSchedule(List<CourseTime> schedule) {
+        for (CourseTime courseTime: schedule){
+            courseTime.isVaild();
+        }
     }
 
     public void deleteCourse(int id,Authentication authentication) throws IllegalAccessException {

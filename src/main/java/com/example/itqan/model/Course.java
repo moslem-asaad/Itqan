@@ -29,6 +29,7 @@ public class Course {
     @OneToMany(mappedBy = "course",
             cascade = CascadeType.ALL,
             orphanRemoval = true)
+    @JsonManagedReference(value = "course-courseTime")
     private List<CourseTime> schedule = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
@@ -37,7 +38,7 @@ public class Course {
     @OneToMany(mappedBy = "course",
             cascade = CascadeType.ALL,
             orphanRemoval = true)
-    @JsonManagedReference
+    @JsonManagedReference(value = "course-lesson")
     private List<Lesson> lessons;
 
     public void setName(String name) {

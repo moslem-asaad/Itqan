@@ -1,5 +1,8 @@
 package com.example.itqan.model;
 
+import com.example.itqan.exceptions.InvalidModelStateException;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 
 import java.time.DayOfWeek;
@@ -17,6 +20,7 @@ public class CourseTime {
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id")
+    @JsonBackReference(value = "course-courseTime")
     private Course course;
 
     @Enumerated(EnumType.STRING)
@@ -24,9 +28,11 @@ public class CourseTime {
     private DayOfWeek dayOfWeek;
 
     @Column(name = "start_time", nullable = false)
+    @JsonFormat(pattern = "HH:mm")
     private LocalTime startTime;
 
     @Column(name = "end_time",   nullable = false)
+    @JsonFormat(pattern = "HH:mm")
     private LocalTime endTime;
 
     public Long getId() {
@@ -69,9 +75,11 @@ public class CourseTime {
         this.endTime = endTime;
     }
 
+    public void isVaild() {
+        if(!startTime.isBefore(endTime))
+            throw new IllegalArgumentException("start time should be before end time") ;
+    }
 
-
-    // optional: room / link / validFrom / validTo …
 
 
 }
