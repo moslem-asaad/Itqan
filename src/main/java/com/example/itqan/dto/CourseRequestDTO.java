@@ -1,10 +1,12 @@
 package com.example.itqan.dto;
 
+import com.example.itqan.model.CourseTime;
+
 import java.util.List;
 
 public class CourseRequestDTO {
     private String name;
-    private String schedule;
+    private List<CourseTime> schedule;
     private int teacherId;
     private List<Integer> studentIds;
 
@@ -16,11 +18,11 @@ public class CourseRequestDTO {
         this.name = name;
     }
 
-    public String getSchedule() {
+    public List<CourseTime> getSchedule() {
         return schedule;
     }
 
-    public void setSchedule(String schedule) {
+    public void setSchedule(List<CourseTime> schedule) {
         this.schedule = schedule;
     }
 

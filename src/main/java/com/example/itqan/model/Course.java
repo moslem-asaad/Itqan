@@ -4,6 +4,7 @@ import com.example.itqan.exceptions.InvalidModelStateException;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -14,7 +15,6 @@ public class Course {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     private String name;
-    private String schedule;
     @ManyToOne
     @JoinColumn(name = "teacher_id")
     private Teacher teacher;
@@ -26,22 +26,22 @@ public class Course {
     )
     private List<Student> students;
 
+    @OneToMany(mappedBy = "course",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
+    private List<CourseTime> schedule = new ArrayList<>();
+
     @Enumerated(EnumType.STRING)
     private CourseType courseType;
 
-
-    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "course",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
     @JsonManagedReference
     private List<Lesson> lessons;
 
-
-
     public void setName(String name) {
         this.name = name;
-    }
-
-    public void setSchedule(String schedule) {
-        this.schedule = schedule;
     }
 
     public void setTeacher(Teacher teacher) {
@@ -58,10 +58,6 @@ public class Course {
 
     public String getName() {
         return name;
-    }
-
-    public String getSchedule() {
-        return schedule;
     }
 
     public Teacher getTeacher() {
@@ -97,6 +93,14 @@ public class Course {
 
     public void setLessons(List<Lesson> lessons) {
         this.lessons = lessons;
+    }
+
+    public List<CourseTime> getSchedule() {
+        return schedule;
+    }
+
+    public void setSchedule(List<CourseTime> schedule) {
+        this.schedule = schedule;
     }
 
     public enum CourseType{
