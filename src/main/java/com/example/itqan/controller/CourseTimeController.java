@@ -1,5 +1,6 @@
 package com.example.itqan.controller;
 
+import com.example.itqan.dto.CourseTimeDTO;
 import com.example.itqan.model.CourseTime;
 import com.example.itqan.service.CourseTimeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,12 +17,12 @@ public class CourseTimeController {
     private CourseTimeService courseTimeService;
 
     @GetMapping("/next")
-    public ResponseEntity<List<CourseTime>> getNextLessonsForTeacher(
+    public ResponseEntity<List<CourseTimeDTO>> getNextLessonsForTeacher(
             @RequestParam Long teacherId,
             @RequestParam(defaultValue = "0") int page) {
         int size = 4;
         try {
-            List<CourseTime> lessons = courseTimeService.getNextLessonsForTeacher(teacherId, page, size);
+            List<CourseTimeDTO> lessons = courseTimeService.getNextLessonsForTeacher(teacherId, page, size);
             if (lessons.isEmpty()) {
                 return ResponseEntity.noContent().build();
             }

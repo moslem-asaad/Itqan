@@ -10,7 +10,7 @@ public class CourseResponseDTO {
 
     public int id;
     public String name;
-    public List<CourseTime> schedule;
+    public List<CourseTimeDTO> schedule;
     public int teacherId;
     public int numOfStudents;
 }

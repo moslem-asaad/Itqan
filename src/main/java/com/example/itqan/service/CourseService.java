@@ -106,10 +106,26 @@ public class CourseService {
     }
 
     private void isValidSchedule(List<CourseTime> schedule) {
-        for (CourseTime courseTime: schedule){
-            courseTime.isVaild();
+        for (int i = 0; i < schedule.size(); i++) {
+            CourseTime a = schedule.get(i);
+            a.isVaild();
+            for (int j = i + 1; j < schedule.size(); j++) {
+                CourseTime b = schedule.get(j);
+                if (a.getDayOfWeek() == b.getDayOfWeek()) {
+                    boolean overlap = a.getStartTime().isBefore(b.getEndTime()) &&
+                            a.getEndTime().isAfter(b.getStartTime());
+                    if (overlap) {
+                        throw new IllegalArgumentException(
+                                "Schedule conflict between submitted times on " + a.getDayOfWeek() +
+                                        ": " + a.getStartTime() + "–" + a.getEndTime() +
+                                        " overlaps with " + b.getStartTime() + "–" + b.getEndTime()
+                        );
+                    }
+                }
+            }
         }
     }
+
 
     public void deleteCourse(int id,Authentication authentication) throws IllegalAccessException {
         Course course = courseRepository.findById(id)
@@ -151,8 +167,11 @@ public class CourseService {
 
         List<CourseTime> existingTimes = courseTimeRepository.findByCourse_TeacherId(teacher.getId());
 
-        for (CourseTime newTime : dto.getSchedule()) {
-            validateNoOverlap(existingTimes, newTime);
+        if(dto.getSchedule()!=null) {
+            isValidSchedule(dto.getSchedule());
+            for (CourseTime newTime : dto.getSchedule()) {
+                validateNoOverlap(existingTimes, newTime);
+            }
         }
 
         CourseMapper.fromRequestDTO(course,dto,teacher,students);

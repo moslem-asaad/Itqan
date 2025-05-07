@@ -2,6 +2,7 @@ package com.example.itqan.mapper;
 
 import com.example.itqan.dto.CourseRequestDTO;
 import com.example.itqan.dto.CourseResponseDTO;
+import com.example.itqan.dto.CourseTimeDTO;
 import com.example.itqan.model.Course;
 import com.example.itqan.model.CourseTime;
 import com.example.itqan.model.Student;
@@ -11,6 +12,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 
 public class CourseMapper {
@@ -18,7 +20,7 @@ public class CourseMapper {
         CourseResponseDTO dto = new CourseResponseDTO();
         dto.id = course.getId();
         dto.name = course.getName();
-        dto.schedule = course.getSchedule();
+        dto.schedule  = CourseTimeMapper.generateCourseTimeDTOList(course.getSchedule());
         dto.teacherId = course.getTeacher().getId();
         dto.numOfStudents = course.getStudents() != null ? course.getStudents().size() : 0;
         return dto;
