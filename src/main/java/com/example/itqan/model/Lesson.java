@@ -85,4 +85,10 @@ public class Lesson {
         resources.add(lessonResource);
         return resources;
     }
+
+    public void validate() {
+        if (title == null || title.trim().isEmpty() || !Character.isLetter(title.trim().charAt(0))) {
+            throw new InvalidModelStateException("Title must start with a letter");
+        }
+    }
 }

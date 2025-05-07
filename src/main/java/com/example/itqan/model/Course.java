@@ -108,4 +108,17 @@ public class Course {
         TAJWEED,
         MEMORIZATION
     }
+
+    public void validate() {
+        if (name == null || name.trim().isEmpty() || !Character.isLetter(name.trim().charAt(0))) {
+            throw new InvalidModelStateException("Name must start with a letter");
+        }
+        if (schedule == null || schedule.isEmpty()) {
+            throw new InvalidModelStateException("Schedule must not be empty");
+        }
+        for (CourseTime ct : schedule) {
+            ct.isVaild();
+        }
+    }
+
 }

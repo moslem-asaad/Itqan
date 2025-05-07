@@ -100,6 +100,7 @@ public class CourseService {
 
         Course course = new Course();
         CourseMapper.fromRequestDTO(course, dto, teacher, students);
+        course.validate();
 
         course = courseRepository.save(course);
         return CourseMapper.toResponseDTO(course);
@@ -175,6 +176,8 @@ public class CourseService {
         }
 
         CourseMapper.fromRequestDTO(course,dto,teacher,students);
+        course.validate();
+
         course = courseRepository.save(course);
 
 

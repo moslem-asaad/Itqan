@@ -34,6 +34,7 @@ public class LessonService {
             throw new IllegalAccessException("Access Denied, The course belongs to someone else");
         }
         Lesson lesson = LessonMapper.fromDTO(dto,course);
+        lesson.validate();
         lessonRepository.save(lesson);
         return LessonMapper.toDTO(lesson);
     }
