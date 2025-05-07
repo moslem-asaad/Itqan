@@ -25,7 +25,6 @@ public class CourseMapper {
     }
 
     public static Course fromRequestDTO(Course course,CourseRequestDTO dto, Teacher teacher, List<Student> students){
-//        Course course = new Course();
         if (dto.getName() !=null) course.setName(dto.getName());
         if (dto.getSchedule() != null) {
             List<CourseTime> times = dto.getSchedule().stream()
@@ -47,7 +46,7 @@ public class CourseMapper {
         return course;
     }
 
-    private static LocalDateTime calculateNextLessonDate(DayOfWeek dayOfWeek, LocalTime startTime) {
+    public static LocalDateTime calculateNextLessonDate(DayOfWeek dayOfWeek, LocalTime startTime) {
         LocalDate today = LocalDate.now();
         DayOfWeek todayDow = today.getDayOfWeek();
 

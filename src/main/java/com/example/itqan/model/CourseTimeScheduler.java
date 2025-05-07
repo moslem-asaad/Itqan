@@ -9,6 +9,8 @@ import com.example.itqan.model.CourseTime;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static com.example.itqan.mapper.CourseMapper.calculateNextLessonDate;
+
 @Component
 public class CourseTimeScheduler {
 
@@ -21,10 +23,15 @@ public class CourseTimeScheduler {
         LocalDateTime now = LocalDateTime.now();
 
         for (CourseTime ct : allTimes) {
-            if (ct.getNextLessonDate().isBefore(now)) {
+            if (ct.getNextLessonDate() == null){
+                LocalDateTime nextLessonDate = calculateNextLessonDate(ct.getDayOfWeek(), ct.getStartTime());
+                ct.setNextLessonDate(nextLessonDate);
+            }
+            else if (ct.getNextLessonDate().isBefore(now)) {
                 ct.setNextLessonDate(ct.getNextLessonDate().plusWeeks(1));
             }
         }
         courseTimeRepository.saveAll(allTimes);
     }
+    // 0 */1 * * * ? - runs every minute
 }
