@@ -7,6 +7,7 @@ import com.example.itqan.exceptions.ResourceNotFoundException;
 import com.example.itqan.mapper.CourseMapper;
 import com.example.itqan.model.*;
 import com.example.itqan.repository.CourseRepository;
+import com.example.itqan.repository.CourseTimeRepository;
 import com.example.itqan.repository.StudentRepository;
 import com.example.itqan.repository.TeacherRepository;
 import jakarta.transaction.Transactional;
@@ -29,10 +30,16 @@ public class CourseService {
     private final TeacherRepository teacherRepository;
     private final StudentRepository studentRepository;
 
-    public CourseService(CourseRepository courseRepository, TeacherRepository teacherRepository, StudentRepository studentRepository) {
+    private final CourseTimeRepository courseTimeRepository;
+
+    public CourseService(CourseRepository courseRepository,
+                         TeacherRepository teacherRepository,
+                         StudentRepository studentRepository,
+                         CourseTimeRepository courseTimeRepository) {
         this.courseRepository = courseRepository;
         this.teacherRepository = teacherRepository;
         this.studentRepository = studentRepository;
+        this.courseTimeRepository = courseTimeRepository;
     }
 
     public List<Course> getAllCourses() {
@@ -85,6 +92,12 @@ public class CourseService {
         if (dto.getStudentIds()!=null)
             students = studentRepository.findAllById(dto.getStudentIds());
 
+        List<CourseTime> existingTimes = courseTimeRepository.findByCourse_TeacherId(teacher.getId());
+
+        for (CourseTime newTime : dto.getSchedule()) {
+            validateNoOverlap(existingTimes, newTime);
+        }
+
         Course course = new Course();
         CourseMapper.fromRequestDTO(course, dto, teacher, students);
 
@@ -135,6 +148,13 @@ public class CourseService {
         List<Student> students = null;
         if (dto.getStudentIds()!=null)
             students = studentRepository.findAllById(dto.getStudentIds());
+
+        List<CourseTime> existingTimes = courseTimeRepository.findByCourse_TeacherId(teacher.getId());
+
+        for (CourseTime newTime : dto.getSchedule()) {
+            validateNoOverlap(existingTimes, newTime);
+        }
+
         CourseMapper.fromRequestDTO(course,dto,teacher,students);
         course = courseRepository.save(course);
 
@@ -149,6 +169,23 @@ public class CourseService {
             throw new IllegalAccessException("Access denied.");
         }
     }
+
+    public void validateNoOverlap(List<CourseTime> existingTimes, CourseTime newTime) {
+        for (CourseTime ct : existingTimes) {
+            if (ct.getDayOfWeek() == newTime.getDayOfWeek()) {
+                boolean overlap = newTime.getStartTime().isBefore(ct.getEndTime())
+                        && newTime.getEndTime().isAfter(ct.getStartTime());
+
+                if (overlap) {
+                    throw new IllegalArgumentException(
+                            "Schedule conflict on " + newTime.getDayOfWeek() +
+                                    " between " + ct.getStartTime() + "–" + ct.getEndTime()
+                    );
+                }
+            }
+        }
+    }
+
 
 
 }

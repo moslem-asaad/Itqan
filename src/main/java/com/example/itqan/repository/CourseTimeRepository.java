@@ -14,6 +14,7 @@ public interface CourseTimeRepository extends JpaRepository<CourseTime, Long> {
             "WHERE ct.nextLessonDate >= :now AND ct.course.teacher.id = :teacherId " +
             "ORDER BY ct.nextLessonDate ASC")
     List<CourseTime> findNextLessonsByTeacher(Long teacherId, LocalDateTime now, Pageable pageable);
+    List<CourseTime> findByCourse_TeacherId(int teacherId);
 
 
 }
