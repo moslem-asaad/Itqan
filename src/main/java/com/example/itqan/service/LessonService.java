@@ -48,16 +48,16 @@ public class LessonService {
      * @throws IllegalAccessException
      */
     public LessonDTO addResourceToLesson(int lessonId, LessonResourceDTO dto, Authentication authentication) throws IllegalAccessException {
-        Lesson lesson = lessonRepository.findById(lessonId)
-                .orElseThrow(() -> new ResourceNotFoundException("Lesson not found"));
-        User user = (User) authentication.getPrincipal();
-        if (user.getId() != lesson.getOwnerTeacherId()){
-            throw new IllegalAccessException("Access Denied, The course belongs to someone else");
-        }
+        Lesson lesson = validParams(lessonId, authentication);
         LessonResource resource = LessonResourceMapper.fromDTO(dto,lesson);
         lesson.addResource(resource);
         lessonRepository.save(lesson);
         return LessonMapper.toDTO(lesson);
+    }
+
+    public void deleteLesson(int lessonId, Authentication authentication) throws IllegalAccessException {
+        validParams(lessonId, authentication);
+        lessonRepository.deleteById(lessonId);
     }
 
     public boolean deleteResource(int resourceId, Authentication authentication) throws IllegalAccessException {
@@ -104,5 +104,16 @@ public class LessonService {
 
         return lessonDTOs;
     }
+
+    private Lesson validParams(int lessonId, Authentication authentication) throws IllegalAccessException {
+        Lesson lesson = lessonRepository.findById(lessonId)
+                .orElseThrow(() -> new ResourceNotFoundException("Lesson not found"));
+        User user = (User) authentication.getPrincipal();
+        if (user.getId() != lesson.getOwnerTeacherId()){
+            throw new IllegalAccessException("Access Denied, The course belongs to someone else");
+        }
+        return lesson;
+    }
+
 
 }

@@ -29,18 +29,17 @@ public class CourseMapper {
     public static Course fromRequestDTO(Course course,CourseRequestDTO dto, Teacher teacher, List<Student> students){
         if (dto.getName() !=null) course.setName(dto.getName());
         if (dto.getSchedule() != null) {
-            List<CourseTime> times = dto.getSchedule().stream()
-                    .map(t -> {
-                        CourseTime ct = new CourseTime();
-                        ct.setCourse(course);
-                        ct.setDayOfWeek(t.getDayOfWeek());
-                        ct.setStartTime(t.getStartTime());
-                        ct.setEndTime(t.getEndTime());
-                        LocalDateTime nextLessonDate = calculateNextLessonDate(t.getDayOfWeek(), t.getStartTime());
-                        ct.setNextLessonDate(nextLessonDate);
-                        return ct;
-                    }).toList();
-            course.setSchedule(times);
+            course.getSchedule().clear();
+            for (CourseTime t : dto.getSchedule()) {
+                CourseTime ct = new CourseTime();
+                ct.setCourse(course);
+                ct.setDayOfWeek(t.getDayOfWeek());
+                ct.setStartTime(t.getStartTime());
+                ct.setEndTime(t.getEndTime());
+                LocalDateTime nextLessonDate = calculateNextLessonDate(t.getDayOfWeek(), t.getStartTime());
+                ct.setNextLessonDate(nextLessonDate);
+                course.getSchedule().add(ct);
+            }
         }
         course.setTeacher(teacher);
         if (students!=null) course.setStudents(students);

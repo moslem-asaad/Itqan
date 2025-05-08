@@ -58,6 +58,12 @@ public class LessonController {
         return ResponseEntity.ok(lessonDTO);
     }
 
+    @DeleteMapping("/{lessonId}")
+    public ResponseEntity<?> deleteLesson(@PathVariable int lessonId, Authentication authentication) throws IllegalAccessException {
+        lessonService.deleteLesson(lessonId,authentication);
+        return ResponseEntity.ok("Lesson Deleted");
+    }
+
     @DeleteMapping("/resources/{resourceId}")
     public ResponseEntity<?> deleteResource(@PathVariable int resourceId, Authentication authentication) throws IllegalAccessException {
         lessonService.deleteResource(resourceId,authentication);

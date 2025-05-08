@@ -142,12 +142,13 @@ public class CourseService {
 
     @Transactional
     public CourseResponseDTO updateCourse(int teacherId,int courseId, CourseRequestDTO dto,Authentication authentication) throws IllegalAccessException {
-        if (teacherId!=dto.getTeacherId()){
-            throw new InvalidIdException("Invalid Params");
-        }
 
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
+
+        if (course.getTeacher().getId()!=teacherId){
+            throw new InvalidIdException("Invalid Params");
+        }
 
         Teacher teacher = teacherRepository.findById(teacherId)
                 .orElseThrow(() -> new ResourceNotFoundException("Teacher not found"));
@@ -158,9 +159,6 @@ public class CourseService {
             throw new IllegalAccessException("Access denied.");
         }
 
-        if (user.getRole() == Role.TEACHER && dto.getTeacherId() != user.getId()) {
-            throw new IllegalAccessException("You can only edit your own courses.");
-        }
 
         List<Student> students = null;
         if (dto.getStudentIds()!=null)
@@ -177,7 +175,6 @@ public class CourseService {
 
         CourseMapper.fromRequestDTO(course,dto,teacher,students);
         course.validate();
-
         course = courseRepository.save(course);
 
 
